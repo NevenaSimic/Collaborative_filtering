@@ -1,1 +1,1 @@
-# Collaborative_filtering
+# Comparative study of collaborative filtering algorithms
