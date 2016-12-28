@@ -1,22 +1,26 @@
 import pandas
-import webbrowser
-from tempfile import NamedTemporaryFile
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # number of rows from ratings.dat file which will be processed
-NUMBER_OF_ROWS = 10000
+NUMBER_OF_ROWS = 100000
 
-# structure - UserID::MovieID::Rating::Timestamp
-cols = ['UserID', 'MovieID', 'Rating', 'Timestamp']
-
-data = pandas.read_csv('./data/ml-10M100K/ratings.dat', sep='::', header=None, nrows=NUMBER_OF_ROWS, engine='python', names=cols)
-data = data.drop(cols[3], 1)
-data = data.pivot(index=cols[0], columns=cols[1], values=cols[2])
+columns = ['UserID', 'MovieID', 'Rating']
+# read data
+data = pandas.read_csv('./data/ml-10M100K/ratings.dat', sep='::', engine='python', header=None, names=columns, usecols=columns, nrows=NUMBER_OF_ROWS)
+# transform data
+data = data.pivot(index=columns[0], columns=columns[1], values=columns[2])
+# replace missing values with zeros
 data = data.fillna(0)
 
-# debug
-tmp = NamedTemporaryFile(delete=False, suffix='.html')
-data.to_html(tmp)
-webbrowser.open(tmp.name)
+# heat-map before matrix sort
+sns.heatmap(data, yticklabels=False, xticklabels=False)
+plt.savefig('./images/heatmap-before-sort.png')
+plt.clf()
 
-
+# sort matrix
 # TODO: Sort user-item matrix so that the density decreases along the main diagonal
+
+# heat-map after matrix sort
+sns.heatmap(data, yticklabels=False, xticklabels=False)
+plt.savefig('./images/heatmap-after-sort.png')
