@@ -1,0 +1,1 @@
+This directory is intended for storing the graphs (experiment results).
