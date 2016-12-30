@@ -1,9 +1,10 @@
 import pandas
 import matplotlib.pyplot as plt
 import seaborn as sns
+import model_based
 
 # number of rows from ratings.dat file which will be processed
-NUMBER_OF_ROWS = 100000
+NUMBER_OF_ROWS = 10000
 
 columns = ['UserID', 'MovieID', 'Rating']
 # read data
@@ -18,9 +19,23 @@ sns.heatmap(data, yticklabels=False, xticklabels=False)
 plt.savefig('./images/heatmap-before-sort.png')
 plt.clf()
 
+# sort
 # TODO: Sort user-item DataFrame so that the density decreases along the main diagonal
-
 
 # heat-map after DataFrame sort
 sns.heatmap(data, yticklabels=False, xticklabels=False)
 plt.savefig('./images/heatmap-after-sort.png')
+
+# data info
+print 'Number of users: ', len(data.index)
+print 'Number of items:', len(data.columns), '\n'
+
+# memory-based algorithms
+
+# model-based algorithms
+kmeans_cluster = model_based.kmeans_clustering(data)
+print 'K-means labels: ', kmeans_cluster.labels_, '\n'
+
+agglomerative_cluster = model_based.agglomerative_clustering(data)
+print 'Agglomerative labels: ', agglomerative_cluster.labels_, '\n'
+

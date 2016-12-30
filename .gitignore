@@ -1,3 +1,4 @@
 .idea/
 data/ml-10M100K/
 images/*.png
+*.pyc
