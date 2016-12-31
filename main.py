@@ -19,8 +19,15 @@ sns.heatmap(data, yticklabels=False, xticklabels=False)
 plt.savefig('./images/heatmap-before-sort.png')
 plt.clf()
 
-# sort
-# TODO: Sort user-item DataFrame so that the density decreases along the main diagonal
+# Sort user-item DataFrame so that the density decreases along the main diagonal
+matrix_data = data.as_matrix()
+# Number of votes for each user
+for i in range(0, matrix_data.shape[0]-1):
+    row = matrix_data[i]
+    no_of_votes = sum(k > 0 for k in row)
+    print "The user with id: ", i+1, " voted ", no_of_votes, " times."
+# TODO sort
+
 
 # heat-map after DataFrame sort
 sns.heatmap(data, yticklabels=False, xticklabels=False)
