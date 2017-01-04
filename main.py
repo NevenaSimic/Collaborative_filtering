@@ -27,15 +27,17 @@ matrix_data = data.as_matrix()
 for i in range(0, matrix_data.shape[0]-1):
     row = matrix_data[i]
     no_of_votes = sum(k > 0 for k in row)
-    print "The user with id: ", i+1, " voted ", no_of_votes, " times."
+    #print "The user with id: ", i+1, " voted ", no_of_votes, " times."
 # Create matrix with UserID and number of votes
     Num_users, Num_votes = 84, 2976
-    temp_matrix = np.ones((Num_users, Num_votes))
-    temp_matrix = ([[i+1], [no_of_votes]])
-    print temp_matrix
+    temp_matrix = np.ones((Num_users, 2))
+    temp_matrix = ([i+1, no_of_votes])
+    sort_matrix = np.sort(temp_matrix, axis=0)
+    print sort_matrix
 # TODO Sort matrix
 
 #TODO Back to data frame
+
 
 # heat-map after DataFrame sort
 sns.heatmap(data, yticklabels=False, xticklabels=False)
