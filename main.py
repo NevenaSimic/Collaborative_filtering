@@ -24,17 +24,18 @@ plt.clf()
 # Sort user-item DataFrame so that the density decreases along the main diagonal
 matrix_data = data.as_matrix()
 # Number of votes for each user
+matrix = np.zeros((matrix_data.shape[0], 2))
 for i in range(0, matrix_data.shape[0]-1):
     row = matrix_data[i]
     no_of_votes = sum(k > 0 for k in row)
     #print "The user with id: ", i+1, " voted ", no_of_votes, " times."
 # Create matrix with UserID and number of votes
-    Num_users, Num_votes = 84, 2976
-    temp_matrix = np.ones((Num_users, 2))
-    temp_matrix = ([i+1, no_of_votes])
-    sort_matrix = np.sort(temp_matrix, axis=0)
-    print sort_matrix
-# TODO Sort matrix
+    matrix[i][0] = i+1
+    matrix[i][1] = no_of_votes
+print "*********Sorted matrix**********"
+matrix = matrix[matrix[:, 1].argsort()[::-1]]
+print matrix
+print "********************************\n\n"
 
 #TODO Back to data frame
 
