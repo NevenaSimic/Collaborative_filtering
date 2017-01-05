@@ -29,16 +29,20 @@ for i in range(0, matrix_data.shape[0]-1):
     row = matrix_data[i]
     no_of_votes = sum(k > 0 for k in row)
     #print "The user with id: ", i+1, " voted ", no_of_votes, " times."
+
 # Create matrix with UserID and number of votes
     matrix[i][0] = i+1
     matrix[i][1] = no_of_votes
+print "*********Original matrix********"
+print matrix
+print "********************************\n\n"
 print "*********Sorted matrix**********"
 matrix = matrix[matrix[:, 1].argsort()[::-1]]
 print matrix
 print "********************************\n\n"
 
+#matrix_column = matrix [:, [0]]
 #TODO Back to data frame
-
 
 # heat-map after DataFrame sort
 sns.heatmap(data, yticklabels=False, xticklabels=False)
@@ -48,9 +52,11 @@ plt.savefig('./images/heatmap-after-sort.png')
 print 'Number of users: ', len(data.index)
 print 'Number of items:', len(data.columns), '\n'
 
-# memory-based algorithms
+# Memory-based algorithms
+#euclidean_distance = memory_based.euclidean(rating1=  , rating2= )
+#print 'Euclidean distance: ' , euclidean_distance
 
-# model-based algorithms
+# Model-based algorithms
 kmeans_cluster = model_based.kmeans_clustering(data)
 print 'K-means labels: ', kmeans_cluster.labels_, '\n'
 
