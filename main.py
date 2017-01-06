@@ -53,8 +53,15 @@ print 'Number of users: ', len(data.index)
 print 'Number of items:', len(data.columns), '\n'
 
 # Memory-based algorithms
-#euclidean_distance = memory_based.euclidean(rating1=  , rating2= )
-#print 'Euclidean distance: ' , euclidean_distance
+num_users = matrix_data.shape[0]
+print "\n\n**********************************\n\n"
+for user1 in range(num_users):
+    for user2 in range(num_users):
+        if user1 is not user2:
+            rating_user1 = np.squeeze(np.asarray(matrix_data[user1]))
+            rating_user2 = np.squeeze(np.asarray(matrix_data[user2]))
+euclidean_distance = memory_based.euclidean(rating_user1, rating_user2)
+print 'Euclidean distance: ' , euclidean_distance, '\n'
 
 # Model-based algorithms
 kmeans_cluster = model_based.kmeans_clustering(data)
