@@ -21,7 +21,7 @@ sns.heatmap(data, yticklabels=False, xticklabels=False)
 plt.savefig('./images/heatmap-before-sort.png')
 plt.clf()
 
-# Sort user-item DataFrame so that the density decreases along the main diagonal
+# Data frame to matrix
 matrix_data = data.as_matrix()
 # Number of votes for each user
 matrix = np.zeros((matrix_data.shape[0], 2))
@@ -41,8 +41,13 @@ matrix = matrix[matrix[:, 1].argsort()[::-1]]
 print matrix
 print "********************************\n\n"
 
-#matrix_column = matrix [:, [0]]
-#TODO Back to data frame
+#Back to data frame
+matrix_column = matrix[:, 0]
+data = pandas.DataFrame(matrix_data)
+data = data.set_index(matrix_column)
+print data
+
+#TODO Sort values
 
 # heat-map after DataFrame sort
 sns.heatmap(data, yticklabels=False, xticklabels=False)
