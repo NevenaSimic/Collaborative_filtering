@@ -32,15 +32,15 @@ user_based_data = sort(user_based_data)
 save_heatmap_image(user_based_data, 'user-based-heatmap-after-sort')
 
 # Memory-based algorithms
-matrix_data = user_based_data.as_matrix()
+matrix_data = data.as_matrix()
 num_users = matrix_data.shape[0]
 for user1 in range(num_users):
-    for user2 in range(num_users):
-        if user1 is not user2:
-            rating_user1 = np.squeeze(np.asarray(matrix_data[user1]))
-            rating_user2 = np.squeeze(np.asarray(matrix_data[user2]))
-euclidean_distance = memory_based.euclidean(rating_user1, rating_user2)
-print 'Euclidean distance: ' , euclidean_distance, '\n'
+	for user2 in range(num_users):
+		if user1 is not user2:
+			rating_user1 = np.squeeze(np.asarray(matrix_data[user1]))
+			rating_user2 = np.squeeze(np.asarray(matrix_data[user2]))
+			euclidean_distance = memory_based.euclidean(rating_user1, rating_user2)
+			#print 'Euclidean distance between users' ,user1, 'and', user2, 'is: ', euclidean_distance, '\n'
 
 # Model-based algorithms
 kmeans_cluster = model_based.kmeans_clustering(data)
