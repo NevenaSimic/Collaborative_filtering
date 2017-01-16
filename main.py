@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 from sort import sort
-from helpers import save_heatmap_image
+from helpers import *
 import model_based
 import memory_based
+import operator
 
 # number of rows from ratings.dat file which will be processed
 NUMBER_OF_ROWS = 10000
@@ -31,7 +32,9 @@ save_heatmap_image(user_based_data, 'user-based-heatmap-before-sort')
 user_based_data = sort(user_based_data)
 save_heatmap_image(user_based_data, 'user-based-heatmap-after-sort')
 
-# Memory-based algorithms
+###########################
+# Memory-based algorithms #
+###########################
 matrix_data = data.as_matrix()
 num_users = matrix_data.shape[0]
 for user1 in range(num_users):
@@ -42,9 +45,49 @@ for user1 in range(num_users):
 			euclidean_distance = memory_based.euclidean(rating_user1, rating_user2)
 			#print 'Euclidean distance between users' ,user1, 'and', user2, 'is: ', euclidean_distance, '\n'
 
-# Model-based algorithms
-kmeans_cluster = model_based.kmeans_clustering(data)
-print 'K-means labels: ', kmeans_cluster.labels_, '\n'
 
-agglomerative_cluster = model_based.agglomerative_clustering(data)
+##########################
+# Model-based algorithms #
+##########################
+
+# user-based approach
+kmeans_cluster = model_based.kmeans_clustering(user_based_data)
+print 'K-means labels: ', kmeans_cluster.labels_, '\n'
+cluster_suggestions = {}
+for label in kmeans_cluster.labels_:
+    if label not in cluster_suggestions:
+        users = user_based_data.iloc[kmeans_cluster.labels_ == label]
+        suggestions = suggest(users)
+        cluster_suggestions[label] = users.columns.values[max(suggestions.iteritems(), key=operator.itemgetter(1))[0]]
+print 'Cluster suggestion: ', cluster_suggestions, '\n'
+
+agglomerative_cluster = model_based.agglomerative_clustering(user_based_data)
 print 'Agglomerative labels: ', agglomerative_cluster.labels_, '\n'
+cluster_suggestions = {}
+for label in agglomerative_cluster.labels_:
+    if label not in cluster_suggestions:
+        users = user_based_data.iloc[kmeans_cluster.labels_ == label]
+        suggestions = suggest(users)
+        cluster_suggestions[label] = users.columns.values[max(suggestions.iteritems(), key=operator.itemgetter(1))[0]]
+print 'Cluster suggestion: ', cluster_suggestions, '\n'
+
+# item-base approach
+kmeans_cluster = model_based.kmeans_clustering(item_based_data)
+print 'K-means labels: ', kmeans_cluster.labels_, '\n'
+cluster_suggestions = {}
+for label in kmeans_cluster.labels_:
+    if label not in cluster_suggestions:
+        items = item_based_data.iloc[kmeans_cluster.labels_ == label]
+        suggestions = suggest_max_voted_item(items)
+        cluster_suggestions[label] = items.index.values[max(suggestions.iteritems(), key=operator.itemgetter(1))[0]]
+print 'Cluster suggestion: ', cluster_suggestions, '\n'
+
+agglomerative_cluster = model_based.agglomerative_clustering(item_based_data)
+print 'Agglomerative labels: ', agglomerative_cluster.labels_, '\n'
+cluster_suggestions = {}
+for label in agglomerative_cluster.labels_:
+    if label not in cluster_suggestions:
+        items = item_based_data.iloc[kmeans_cluster.labels_ == label]
+        suggestions = suggest_max_voted_item(items)
+        cluster_suggestions[label] = items.index.values[max(suggestions.iteritems(), key=operator.itemgetter(1))[0]]
+print 'Cluster suggestion: ', cluster_suggestions, '\n'
