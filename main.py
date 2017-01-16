@@ -4,7 +4,9 @@ from sort import sort
 from helpers import *
 import model_based
 import memory_based
-import operator
+from operator import itemgetter
+from scipy.spatial import distance
+from sklearn.neighbors import NearestNeighbors
 
 # number of rows from ratings.dat file which will be processed
 NUMBER_OF_ROWS = 10000
@@ -17,16 +19,16 @@ data = data.pivot(index=columns[0], columns=columns[1], values=columns[2])
 # replace missing values with zeros
 data = data.fillna(0)
 # data info
-print 'Number of users: ', len(data.index)
+print '\n', 'Number of users: ', len(data.index)
 print 'Number of items: ', len(data.columns), '\n'
 
-# item-based matrix
+# Item-based matrix
 item_based_data = data.copy().T
 save_heatmap_image(item_based_data, 'item-based-heatmap-before-sort')
 item_based_data = sort(item_based_data)
 save_heatmap_image(item_based_data, 'item-based-heatmap-after-sort')
 
-# user-based matrix
+# User-based matrix
 user_based_data = data.copy()
 save_heatmap_image(user_based_data, 'user-based-heatmap-before-sort')
 user_based_data = sort(user_based_data)
@@ -35,22 +37,55 @@ save_heatmap_image(user_based_data, 'user-based-heatmap-after-sort')
 ###########################
 # Memory-based algorithms #
 ###########################
-matrix_data = data.as_matrix()
-num_users = matrix_data.shape[0]
-for user1 in range(num_users):
-	for user2 in range(num_users):
-		if user1 is not user2:
-			rating_user1 = np.squeeze(np.asarray(matrix_data[user1]))
-			rating_user2 = np.squeeze(np.asarray(matrix_data[user2]))
-			euclidean_distance = memory_based.euclidean(rating_user1, rating_user2)
-			#print 'Euclidean distance between users' ,user1, 'and', user2, 'is: ', euclidean_distance, '\n'
+
+# User-based approach
+print '\n', '********************************', '\n'
+print 'MEMORY-BASED(User-based approach)', '\n'
+
+nbrs_euclidean = NearestNeighbors(algorithm='brute', metric='euclidean')
+nbrs_euclidean.fit(user_based_data)
+query_index = np.random.choice(user_based_data.shape[0])
+distances, indices = nbrs_euclidean.kneighbors(user_based_data.iloc[query_index, :].reshape(1, -1), n_neighbors=6)
+for i in range(0, len(distances.flatten())):
+    if i == 0:
+        print 'Recommendations(EUCLIDEAN DISTANCE) for {0}:\n'.format(user_based_data.index[query_index])
+    else:
+        print '{1}, with distance of {2}:'.format(i, user_based_data.index[indices.flatten()[i]],distances.flatten()[i])
+
+print '\n'
+
+nbrs_cosine = NearestNeighbors(algorithm='brute', metric = 'cosine')
+nbrs_cosine.fit(user_based_data)
+query_index = np.random.choice(user_based_data.shape[0])
+distances, indices = nbrs_cosine.kneighbors(user_based_data.iloc[query_index, :].reshape(1, -1), n_neighbors = 6)
+for i in range(0, len(distances.flatten())):
+    if i == 0:
+        print 'Recommendations(COSINE SIMILARITY) for {0}:\n'.format(user_based_data.index[query_index])
+    else:
+        print '{1}, with distance of {2}:'.format(i, user_based_data.index[indices.flatten()[i]],distances.flatten()[i])
+
+print '\n'
+
+nbrs_jaccard = NearestNeighbors(algorithm='brute', metric='jaccard')
+nbrs_jaccard.fit(user_based_data)
+query_index = np.random.choice(user_based_data.shape[0])
+distances, indices = nbrs_jaccard.kneighbors(user_based_data.iloc[query_index, :].reshape(1, -1), n_neighbors=6)
+for i in range(0, len(distances.flatten())):
+    if i == 0:
+        print 'Recommendations(JACCARD SIMILARITY) for {0}:\n'.format(user_based_data.index[query_index])
+    else:
+        print '{1}, with distance of {2}:'.format(i, user_based_data.index[indices.flatten()[i]],distances.flatten()[i])
+
 
 
 ##########################
 # Model-based algorithms #
 ##########################
 
-# user-based approach
+# User-based approach
+print '\n', '********************************', '\n'
+print 'MODEL-BASED(User-based approach)', '\n'
+
 kmeans_cluster = model_based.kmeans_clustering(user_based_data)
 print 'K-means labels: ', kmeans_cluster.labels_, '\n'
 cluster_suggestions = {}
@@ -58,7 +93,7 @@ for label in kmeans_cluster.labels_:
     if label not in cluster_suggestions:
         users = user_based_data.iloc[kmeans_cluster.labels_ == label]
         suggestions = suggest(users)
-        cluster_suggestions[label] = users.columns.values[max(suggestions.iteritems(), key=operator.itemgetter(1))[0]]
+        cluster_suggestions[label] = users.columns.values[max(suggestions.iteritems(), key=itemgetter(1))[0]]
 print 'Cluster suggestion: ', cluster_suggestions, '\n'
 
 agglomerative_cluster = model_based.agglomerative_clustering(user_based_data)
@@ -68,10 +103,13 @@ for label in agglomerative_cluster.labels_:
     if label not in cluster_suggestions:
         users = user_based_data.iloc[kmeans_cluster.labels_ == label]
         suggestions = suggest(users)
-        cluster_suggestions[label] = users.columns.values[max(suggestions.iteritems(), key=operator.itemgetter(1))[0]]
+        cluster_suggestions[label] = users.columns.values[max(suggestions.iteritems(), key=itemgetter(1))[0]]
 print 'Cluster suggestion: ', cluster_suggestions, '\n'
 
-# item-base approach
+# Item-based approach
+print '********************************', '\n'
+print 'MODEL-BASED(Item-based approach)', '\n'
+
 kmeans_cluster = model_based.kmeans_clustering(item_based_data)
 print 'K-means labels: ', kmeans_cluster.labels_, '\n'
 cluster_suggestions = {}
@@ -79,7 +117,7 @@ for label in kmeans_cluster.labels_:
     if label not in cluster_suggestions:
         items = item_based_data.iloc[kmeans_cluster.labels_ == label]
         suggestions = suggest_max_voted_item(items)
-        cluster_suggestions[label] = items.index.values[max(suggestions.iteritems(), key=operator.itemgetter(1))[0]]
+        cluster_suggestions[label] = items.index.values[max(suggestions.iteritems(), key=itemgetter(1))[0]]
 print 'Cluster suggestion: ', cluster_suggestions, '\n'
 
 agglomerative_cluster = model_based.agglomerative_clustering(item_based_data)
@@ -89,5 +127,5 @@ for label in agglomerative_cluster.labels_:
     if label not in cluster_suggestions:
         items = item_based_data.iloc[kmeans_cluster.labels_ == label]
         suggestions = suggest_max_voted_item(items)
-        cluster_suggestions[label] = items.index.values[max(suggestions.iteritems(), key=operator.itemgetter(1))[0]]
+        cluster_suggestions[label] = items.index.values[max(suggestions.iteritems(), key=itemgetter(1))[0]]
 print 'Cluster suggestion: ', cluster_suggestions, '\n'
