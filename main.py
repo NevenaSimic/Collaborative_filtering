@@ -1,3 +1,5 @@
+from math import sqrt
+from time import time
 import pandas as pd
 import numpy as np
 from sort import sort
@@ -7,9 +9,10 @@ import memory_based
 from operator import itemgetter
 from scipy.spatial import distance
 from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 # number of rows from ratings.dat file which will be processed
-NUMBER_OF_ROWS = 10000
+NUMBER_OF_ROWS = 100000
 
 columns = ['UserID', 'MovieID', 'Rating']
 # read data
@@ -34,13 +37,13 @@ save_heatmap_image(user_based_data, 'user-based-heatmap-before-sort')
 user_based_data = sort(user_based_data)
 save_heatmap_image(user_based_data, 'user-based-heatmap-after-sort')
 
+
 ###########################
 # Memory-based algorithms #
 ###########################
-
-# User-based approach
-print '\n', '********************************', '\n'
-print 'MEMORY-BASED(User-based approach)', '\n'
+print '*******************************************'
+print '***  MEMORY-BASED(User-based approach)  ***'
+print '*******************************************', '\n'
 
 nbrs_euclidean = NearestNeighbors(algorithm='brute', metric='euclidean')
 nbrs_euclidean.fit(user_based_data)
@@ -77,55 +80,50 @@ for i in range(0, len(distances.flatten())):
         print '{1}, with distance of {2}:'.format(i, user_based_data.index[indices.flatten()[i]],distances.flatten()[i])
 
 
-
 ##########################
 # Model-based algorithms #
 ##########################
+print '*******************************************'
+print '***             MODEL-BASED             ***'
+print '*******************************************', '\n'
 
-# User-based approach
-print '\n', '********************************', '\n'
-print 'MODEL-BASED(User-based approach)', '\n'
+# predict ratings for the given user and movies
+user_id = 34
+movies = [593, 110, 50, 457]
+true_ratings = user_based_data.loc[34, movies].values.tolist()
 
-kmeans_cluster = model_based.kmeans_clustering(user_based_data)
-print 'K-means labels: ', kmeans_cluster.labels_, '\n'
-cluster_suggestions = {}
-for label in kmeans_cluster.labels_:
-    if label not in cluster_suggestions:
-        users = user_based_data.iloc[kmeans_cluster.labels_ == label]
-        suggestions = suggest(users)
-        cluster_suggestions[label] = users.columns.values[max(suggestions.iteritems(), key=itemgetter(1))[0]]
-print 'Cluster suggestion: ', cluster_suggestions, '\n'
+# base kmeans cluster recommendation
+start = time()
+predicted_ratings = model_based.base_kmeans_cluster_recommendation(user_based_data, user_id, movies)
+execution = time() - start
+mae = mean_absolute_error(true_ratings, predicted_ratings)
+rmse = sqrt(mean_squared_error(true_ratings, predicted_ratings))
+print 'Base KMeans cluster recommendation:'
+print 'True ratings: {}\nPredicted ratings: {}\nMAE: {}\nRMSE: {}\nExecution: {}\n'.format(true_ratings, predicted_ratings, mae, rmse, execution)
 
-agglomerative_cluster = model_based.agglomerative_clustering(user_based_data)
-print 'Agglomerative labels: ', agglomerative_cluster.labels_, '\n'
-cluster_suggestions = {}
-for label in agglomerative_cluster.labels_:
-    if label not in cluster_suggestions:
-        users = user_based_data.iloc[kmeans_cluster.labels_ == label]
-        suggestions = suggest(users)
-        cluster_suggestions[label] = users.columns.values[max(suggestions.iteritems(), key=itemgetter(1))[0]]
-print 'Cluster suggestion: ', cluster_suggestions, '\n'
+# knn kmeans cluster recommendation
+start = time()
+predicted_ratings = model_based.kmeans_cluster_recommendation(user_based_data, user_id, movies, 6)
+execution = time() - start
+mae = mean_absolute_error(true_ratings, predicted_ratings)
+rmse = sqrt(mean_squared_error(true_ratings, predicted_ratings))
+print 'KNN KMeans cluster recommendation:'
+print 'True ratings: {}\nPredicted ratings: {}\nMAE: {}\nRMSE: {}\nExecution: {}\n'.format(true_ratings, predicted_ratings, mae, rmse, execution)
 
-# Item-based approach
-print '********************************', '\n'
-print 'MODEL-BASED(Item-based approach)', '\n'
+# base agglomerative cluster recommendation
+start = time()
+predicted_ratings = model_based.base_agglomerative_cluster_recommendation(user_based_data, user_id, movies)
+execution = time() - start
+mae = mean_absolute_error(true_ratings, predicted_ratings)
+rmse = sqrt(mean_squared_error(true_ratings, predicted_ratings))
+print 'Base Agglomerative cluster recommendation:'
+print 'True ratings: {}\nPredicted ratings: {}\nMAE: {}\nRMSE: {}\nExecution: {}\n'.format(true_ratings, predicted_ratings, mae, rmse, execution)
 
-kmeans_cluster = model_based.kmeans_clustering(item_based_data)
-print 'K-means labels: ', kmeans_cluster.labels_, '\n'
-cluster_suggestions = {}
-for label in kmeans_cluster.labels_:
-    if label not in cluster_suggestions:
-        items = item_based_data.iloc[kmeans_cluster.labels_ == label]
-        suggestions = suggest_max_voted_item(items)
-        cluster_suggestions[label] = items.index.values[max(suggestions.iteritems(), key=itemgetter(1))[0]]
-print 'Cluster suggestion: ', cluster_suggestions, '\n'
-
-agglomerative_cluster = model_based.agglomerative_clustering(item_based_data)
-print 'Agglomerative labels: ', agglomerative_cluster.labels_, '\n'
-cluster_suggestions = {}
-for label in agglomerative_cluster.labels_:
-    if label not in cluster_suggestions:
-        items = item_based_data.iloc[kmeans_cluster.labels_ == label]
-        suggestions = suggest_max_voted_item(items)
-        cluster_suggestions[label] = items.index.values[max(suggestions.iteritems(), key=itemgetter(1))[0]]
-print 'Cluster suggestion: ', cluster_suggestions, '\n'
+# knn agglomerative cluster recommendation
+start = time()
+predicted_ratings = model_based.agglomerative_cluster_recommendation(user_based_data, user_id, movies, 6)
+execution = time() - start
+mae = mean_absolute_error(true_ratings, predicted_ratings)
+rmse = sqrt(mean_squared_error(true_ratings, predicted_ratings))
+print 'KNN Agglomerative cluster recommendation:'
+print 'True ratings: {}\nPredicted ratings: {}\nMAE: {}\nRMSE: {}\nExecution: {}\n'.format(true_ratings, predicted_ratings, mae, rmse, execution)
