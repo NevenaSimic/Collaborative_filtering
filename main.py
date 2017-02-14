@@ -70,17 +70,19 @@ executions = {
 }
 users = []
 movies = []
+analized_pairs = []
 true_ratings = []
 for n in range(number_of_predictions):
     user_id = choice(list(data.index))
     movie_id = None
     for ind, val in data.loc[user_id, :].iteritems():
-        if val > 0:
+        if (val > 0) and ((user_id, movie_id) not in analized_pairs):
             movie_id = ind
             break
     if movie_id:
         users.append(user_id)
         movies.append(movie_id)
+        analized_pairs.append((user_id, movie_id))
         true_ratings.append(data.loc[user_id, movie_id])
 
         # TODO: remove original rating
