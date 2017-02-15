@@ -38,6 +38,9 @@ save_heatmap_image(user_based_data, 'user-based-heatmap-before-sort')
 user_based_data = sort(user_based_data)
 save_heatmap_image(user_based_data, 'user-based-heatmap-after-sort')
 
+# generate rating density image
+generate_rating_density_image(user_based_data)
+
 # predicting ratings
 number_of_predictions = 10
 predicted_ratings = {
