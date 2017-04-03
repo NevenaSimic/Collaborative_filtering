@@ -44,6 +44,8 @@ def kmeans_cluster_recommendation(data, user_id, movie_id, n=5):
 
     label = cluster.labels_[data.index.get_loc(user_id)]
     users = data.iloc[cluster.labels_ == label]
+    if users.shape[0] < 2:
+        return 0
     if (users.shape[0] - 1) < n:
         n = users.shape[0] - 1
 
@@ -67,6 +69,8 @@ def agglomerative_cluster_recommendation(data, user_id, movie_id, n=5):
 
     label = cluster.labels_[data.index.get_loc(user_id)]
     users = data.iloc[cluster.labels_ == label]
+    if users.shape[0] < 2:
+        return 0
     if (users.shape[0] - 1) < n:
         n = users.shape[0] - 1
 
