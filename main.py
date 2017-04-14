@@ -44,7 +44,7 @@ row_step = rows / step
 column_step = cols / step
 
 # predicting ratings
-number_of_predictions = 50
+number_of_predictions = 100
 algorithms = {
     'user-based-euclidean': [],
     'user-based-jaccard': [],
@@ -74,7 +74,7 @@ results = {
 
 def perform_analysis(matrix, n):
     user_based_matrix = matrix
-    item_based_matrix = sort(user_based_matrix.copy().T)
+    item_based_matrix = user_based_matrix.copy().T
 
     pairs, ratings = get_data_for_testing(user_based_matrix, number_of_predictions)
     predicted_ratings = copy.deepcopy(algorithms)
@@ -196,4 +196,4 @@ for key, value in results.iteritems():
     # save RMSE results
     save_graphic_results('./images/' + key + '_rmse.png', rmse, 'Size', 'RMSE', step)
     # save execution results
-    save_graphic_results('./images/' + key + '_execution.png', execution, 'Size', 'Average execution time (s)', step)
+    save_graphic_results('./images/' + key + '_execution.png', execution, 'Size', 'Average execution time', step)
