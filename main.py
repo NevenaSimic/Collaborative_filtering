@@ -4,6 +4,7 @@ import copy
 
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+from datetime import datetime
 
 import user_based
 import item_based
@@ -12,7 +13,7 @@ from helpers import *
 from sort import sort
 
 # number of rows from ratings.dat file which will be processed
-NUMBER_OF_ROWS = 100000
+NUMBER_OF_ROWS = 500000
 
 columns = ['UserID', 'MovieID', 'Rating']
 # read data
@@ -45,6 +46,8 @@ column_step = cols / step
 
 # predicting ratings
 number_of_predictions = 100
+pairs, ratings = get_data_for_testing(user_based_data.iloc[0:row_step, 0:column_step], number_of_predictions)
+
 algorithms = {
     'user-based-euclidean': [],
     'user-based-jaccard': [],
@@ -76,7 +79,6 @@ def perform_analysis(matrix, n):
     user_based_matrix = matrix
     item_based_matrix = user_based_matrix.copy().T
 
-    pairs, ratings = get_data_for_testing(user_based_matrix, number_of_predictions)
     predicted_ratings = copy.deepcopy(algorithms)
     executions = copy.deepcopy(algorithms)
 
@@ -158,12 +160,11 @@ def perform_analysis(matrix, n):
 
     return {
         'step': n,
-        'true_ratings': ratings,
         'predicted_ratings': predicted_ratings,
         'executions': executions
     }
 
-
+print datetime.now().strftime('%Y-%m-%d %H:%M:%S') + '\tStarted'
 for i in range(step):
     # perform analysis related to user number and density
     data = user_based_data.iloc[0:row_step, 0:(i + 1) * column_step]
@@ -177,6 +178,8 @@ for i in range(step):
     data = user_based_data.iloc[0:(i + 1) * row_step, 0:(i + 1) * column_step]
     results['both']['results'].append(perform_analysis(data, n=i))
 
+    print datetime.now().strftime('%Y-%m-%d %H:%M:%S') + '\tFinished step: ' + str(i + 1)
+
 # convert generated results into images
 for key, value in results.iteritems():
     mae = copy.deepcopy(algorithms)
@@ -184,16 +187,14 @@ for key, value in results.iteritems():
     execution = copy.deepcopy(algorithms)
 
     for result in results[key]['results']:
-        true_ratings = result['true_ratings']
-
         for k, val in result['predicted_ratings'].iteritems():
-            mae[k].append(mean_absolute_error(true_ratings, val))
-            rmse[k].append(sqrt(mean_squared_error(true_ratings, val)))
+            mae[k].append(mean_absolute_error(ratings, val))
+            rmse[k].append(sqrt(mean_squared_error(ratings, val)))
             execution[k].append(sum(val) / len(val))
 
     # save MAE results
-    save_graphic_results('./images/' + key + '_mae.png', mae, 'Size', 'MAE', step)
+    save_graphic_results('./images/' + key + '_mae.png', mae, 'Step', 'MAE', step)
     # save RMSE results
-    save_graphic_results('./images/' + key + '_rmse.png', rmse, 'Size', 'RMSE', step)
+    save_graphic_results('./images/' + key + '_rmse.png', rmse, 'Step', 'RMSE', step)
     # save execution results
-    save_graphic_results('./images/' + key + '_execution.png', execution, 'Size', 'Average execution time', step)
+    save_graphic_results('./images/' + key + '_execution.png', execution, 'Step', 'Average execution time', step)
